@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,39 +18,39 @@ import java.util.logging.Logger;
 public class ConnectionHandler implements Runnable {
 
     private Socket connection;
+    private TurnstileServer server;
     private AtomicInteger counter;
 
+    private OutputStream output = null;
+    private PrintWriter writer;
+    private BufferedReader reader;
 
-    public ConnectionHandler(Socket connection, AtomicInteger counter) {
+    public ConnectionHandler(Socket connection, TurnstileServer server, AtomicInteger counter) {
         this.connection = connection;
+        this.server = server;
         this.counter = counter;
+        System.out.println("New connection");
     }
+
 
     @Override
     public void run() {
-
-        OutputStream output = null;
-        PrintWriter writer;
-        InputStream input;
+        
         String type = "";
-
 
         try {
 
             output = connection.getOutputStream();
 
-            input = connection.getInputStream();
+            InputStream input = connection.getInputStream();
 
-            writer = new PrintWriter(output);
+            writer = new PrintWriter(connection.getOutputStream(), true);
+            
+            reader = new BufferedReader(new InputStreamReader(input));
 
             boolean active = true;
 
-           
-            // Read whatever comes in
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-
             String line = reader.readLine();
-
 
             if (line.contains("-")) {
 
@@ -93,7 +92,7 @@ public class ConnectionHandler implements Runnable {
 
                     if (readLine.equals("count")) {
 
-                        sendMessage(counter.get());
+                        writer.println(counter.get());
 
                     } else if (readLine.equals("done")) {
 
@@ -125,10 +124,13 @@ public class ConnectionHandler implements Runnable {
         } finally {
 
             try {
-
+                
+                writer.println(type + " disconnected: \n Current counter:" + counter.get());
+                writer.flush();
+                
                 output.close();
+                writer.close();
                 connection.close();
-                System.out.println(type + " disconnected: \n Current counter:" + counter);
 
             } catch (IOException ex) {
 
@@ -138,25 +140,6 @@ public class ConnectionHandler implements Runnable {
 
         }
 
-    }
-    
-    /**
-     * Sends a message to the client, writing to the input
-     *
-     * @param message The message to send
-     * @throws IOException
-     */
-    public void sendMessage(int people) throws IOException {
-        
-        // Write to the server
-        OutputStream output = connection.getOutputStream();
-        PrintWriter writer = new PrintWriter(output);
-
-        //Tell server that we are a TurnstileClient!
-        writer.println(people);
-
-        writer.flush();
-        
     }
 
 }

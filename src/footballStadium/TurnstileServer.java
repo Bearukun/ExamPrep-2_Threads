@@ -45,7 +45,7 @@ public class TurnstileServer {
         while ((connection = socket.accept()) != null) {
 
             // Handle the connection in the #handleConnection method below
-            executorService.execute(new ConnectionHandler(connection, counter));
+            executorService.execute(new ConnectionHandler(connection, this, counter));
 
         }
 
