@@ -32,10 +32,9 @@ public class ConnectionHandler implements Runnable {
         System.out.println("New connection");
     }
 
-
     @Override
     public void run() {
-        
+
         String type = "";
 
         try {
@@ -45,7 +44,7 @@ public class ConnectionHandler implements Runnable {
             InputStream input = connection.getInputStream();
 
             writer = new PrintWriter(connection.getOutputStream(), true);
-            
+
             reader = new BufferedReader(new InputStreamReader(input));
 
             boolean active = true;
@@ -92,7 +91,9 @@ public class ConnectionHandler implements Runnable {
 
                     if (readLine.equals("count")) {
 
+                        writer.println("Hej");
                         writer.println(counter.get());
+                        
 
                     } else if (readLine.equals("done")) {
 
@@ -105,10 +106,6 @@ public class ConnectionHandler implements Runnable {
             }
 
             switch (type) {
-
-                case "UPPER":
-
-                    break;
 
                 default:
 
@@ -124,10 +121,9 @@ public class ConnectionHandler implements Runnable {
         } finally {
 
             try {
-                
-                writer.println(type + " disconnected: \n Current counter:" + counter.get());
-                writer.flush();
-                
+
+                System.out.println(type + " disconnected: \n Current counter:" + counter.get());
+
                 output.close();
                 writer.close();
                 connection.close();
