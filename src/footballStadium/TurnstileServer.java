@@ -17,7 +17,7 @@ public class TurnstileServer {
     private final String host;
     private final int port;
     private AtomicInteger counter = new AtomicInteger(0);
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     public TurnstileServer(String host, int port) {
 
