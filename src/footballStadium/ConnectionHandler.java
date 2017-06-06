@@ -20,6 +20,9 @@ public class ConnectionHandler implements Runnable {
     private Socket connection;
     private TurnstileServer server;
     private AtomicInteger counter;
+    private int localCounter;
+    
+    private String turnstileName;
 
     private OutputStream output = null;
     private PrintWriter writer;
@@ -48,6 +51,8 @@ public class ConnectionHandler implements Runnable {
             reader = new BufferedReader(new InputStreamReader(input));
 
             boolean active = true;
+            
+            int id = 0;
 
             String line = reader.readLine();
 
@@ -57,7 +62,7 @@ public class ConnectionHandler implements Runnable {
 
                 type = splitString[0];
 
-                int id = Integer.parseInt(splitString[1]);
+                id = Integer.parseInt(splitString[1]);
 
             } else {
 
@@ -68,12 +73,17 @@ public class ConnectionHandler implements Runnable {
             if (type.equals("turnstile")) {
 
                 while (active) {
+                    
+                    turnstileName = type+id;
+                    
+                    server.addTurnstile(this);
 
                     String readLine = reader.readLine();
 
                     if (readLine.equals("1")) {
 
                         counter.addAndGet(1);
+                        localCounter++;
 
                     } else if (readLine.equals("done")) {
 
@@ -91,8 +101,8 @@ public class ConnectionHandler implements Runnable {
 
                     if (readLine.equals("count")) {
 
-                        writer.println("Hej");
-                        writer.println(counter.get());
+                        writer.println(server.reportCount());
+                        writer.println("Total count: " + counter.get());
                         
 
                     } else if (readLine.equals("done")) {
@@ -137,5 +147,24 @@ public class ConnectionHandler implements Runnable {
         }
 
     }
+    
+   
+    public String getTurnstileName() {
+        
+        return turnstileName;
+        
+    }
 
+    public void setTurnstileName(String turnstileName) {
+        
+        this.turnstileName = turnstileName;
+        
+    }
+
+    public int getLocalCounter() {
+        
+        return localCounter;
+        
+    }
+    
 }

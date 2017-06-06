@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,6 +19,7 @@ public class TurnstileServer {
     private final int port;
     private AtomicInteger counter = new AtomicInteger(0);
     private ExecutorService executorService = Executors.newCachedThreadPool();
+    private HashMap<String, ConnectionHandler> turnstiles = new HashMap();
 
     public TurnstileServer(String host, int port) {
 
@@ -50,6 +52,27 @@ public class TurnstileServer {
         }
 
     }
+    
+    public synchronized void addTurnstile(ConnectionHandler connection){
+        
+        turnstiles.put(connection.getTurnstileName(), connection);
+        
+    }
+    
+    public synchronized String reportCount(){
+        
+        String returnString = "";
+        
+        for (ConnectionHandler turnstile : turnstiles.values()) {
+            
+            returnString += turnstile.getTurnstileName() + ": " + turnstile.getLocalCounter() + "\n";
+            
+        }
+        
+        return returnString;
+    }
+    
+    
 
     public static void main(String[] args) throws IOException {
 
